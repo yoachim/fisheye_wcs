@@ -10,31 +10,6 @@ default_location = EarthLocation(lat=-30.2444*u.degree, lon=-70.7494*u.degree,
                                  height=2650.0*u.meter)
 
 
-def read_match(basefilename, image_time, location=default_location):
-    """Read in an astrometry.net files to find the alt,az to x,y mapping
-    """
-    temp = fits.open(basefilename+'-indx.xyls')
-
-    xy_positions = temp[1].data.copy()
-    temp.close()
-    temp = fits.open(basefilename+'.rdls')
-    radec_positions = temp[1].copy()
-    temp.close()
-
-    # Convert to alt-az
-    ref_catalog = SkyCoord(ra=radec_positions.data['RA']*u.degree, dec=radec_positions.data['DEC']*u.degree)
-    alt_az = ref_catalog.transform_to(AltAz(obstime=image_time, location=location))
-
-    names = ['x', 'y', 'alt', 'az']
-    types = [float]*4
-    result = np.empty(xy_positions.size, dtype=list(zip(names, types)))
-    result['x'] = xy_positions['X']
-    result['y'] = xy_positions['Y']
-    result['alt'] = alt_az.alt
-    result['az'] = alt_az.az
-
-    return result
-
 
 def chop_image(filename):
     """
